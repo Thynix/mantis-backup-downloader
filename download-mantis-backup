@@ -1,0 +1,83 @@
+#!/bin/bash
+set -o nounset
+set -o pipefail
+set -o errexit
+set -o errtrace
+trap 'echo "Error at line $LINENO, exit code $?" >&2' ERR
+
+# Configuration ####################################################################################
+# Domain of bugtracker
+TRACKER="REPLACE_THIS.mantishub.io"
+# Mantis login data. Please URL-encode this if necessary.
+# You can also read these from a file with: "<(/path/to/data)"
+LOGIN_EMAIL=""
+PASSWORD=""
+# Location where to put the backup directories
+OUTPUT="."
+####################################################################################################
+
+date=$(date --rfc-3339=date)
+OUTPUT="$OUTPUT/$date"
+if [ -e "$OUTPUT" ] ; then
+	echo "Error: Backup already exists! Directory: $OUTPUT" >&2
+	exit 1
+fi
+mkdir --mode 700 "$OUTPUT"
+
+cookies="$(mktemp)"
+backup_html="$(mktemp)"
+trap 'rm "$cookies" "$backup_html"' EXIT
+
+# Log in
+# The missing "=" between some parameters and their value is intentional, it's specified like that
+# in the wget manpage for whatever reason.
+# To debug by showing output on stdout set output-document to "-".
+
+wget --save-cookies "$cookies" --keep-session-cookies --post-data="username=$LOGIN_EMAIL" \
+	--output-document="/dev/null" --quiet "https://$TRACKER/login_password_page.php"
+
+wget --load-cookies "$cookies" --save-cookies "$cookies" --keep-session-cookies \
+	--post-data="username=$LOGIN_EMAIL&password=$PASSWORD&return=index.php" \
+	--output-document="/dev/null" --quiet "https://$TRACKER/login.php"
+
+# Create backup
+
+wget --load-cookies "$cookies" --save-cookies "$cookies" --keep-session-cookies \
+	--post-data='' --output-document="$backup_html" --quiet \
+	"https://$TRACKER/manage_backup.php"
+
+# Extract dates of backup from HTML
+
+# Use --perl-regexp to get non-greedy behavior by ".*?".
+# See https://stackoverflow.com/questions/3027518/how-to-do-a-non-greedy-match-in-grep
+database_date=$(grep --perl-regexp \
+	"Download database and configuration \((.*?) created on (....-..-.. ..:..)\)" --only-matching \
+	"$backup_html" | grep --only-matching "....-..-..")
+
+attachments_date=$(grep --perl-regexp \
+	"Download attachments \((.*?) created on (....-..-.. ..:..)\)" --only-matching \
+	"$backup_html" | grep --only-matching "....-..-..")
+
+if [ "$database_date" != "$date" ] || [ "$attachments_date" != "$date" ] ; then
+	echo "Error: Backup dates mismatch current date! Did requesting a new backup fail?" >&2
+	echo "Notice: Don't run this too close to midnight, the date might roll over meanwhile!" >&2
+	echo "Current date:        $date" >&2
+	echo "Date of database:    $database_date" >&2
+	echo "Date of attachments: $attachments_date" >&2
+	rmdir "$OUTPUT"
+	exit 1
+fi
+
+# Download backup
+wget --load-cookies "$cookies" --output-document="$OUTPUT/mantis-database.zip" --quiet \
+	"https://$TRACKER/manage_backup_download.php?type=data"
+wget --load-cookies "$cookies" --output-document="$OUTPUT/mantis-attachments.zip" --quiet \
+	"https://$TRACKER/manage_backup_download.php?type=attach"
+
+# Test zip files
+unzip -tqq "$OUTPUT/mantis-database.zip"
+unzip -tqq "$OUTPUT/mantis-attachments.zip"
+
+# Set timestamp of zip files to that of the newest contained file
+unzip -Tq "$OUTPUT/mantis-database.zip"
+unzip -Tq "$OUTPUT/mantis-attachments.zip"
