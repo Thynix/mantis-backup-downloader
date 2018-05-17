@@ -1,4 +1,4 @@
-### Cronjob-capable shell script to download backups from Mantis
+### Cronjob-capable shell script to download backups from Mantis bugtracker
 
 This script:
 - automatically logs in to Mantis, see section "Configuration" in the
