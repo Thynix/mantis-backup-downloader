@@ -4,6 +4,8 @@ set -o pipefail
 set -o errexit
 set -o errtrace
 trap 'echo "Error at line $LINENO, exit code $?" >&2' ERR
+shopt -s nullglob
+shopt -s failglob
 
 # Configuration ####################################################################################
 # Domain of bugtracker
@@ -13,7 +15,7 @@ TRACKER="REPLACE_THIS.mantishub.io"
 LOGIN_EMAIL=""
 PASSWORD=""
 # Location where to put the backup directories. Must not start with "-".
-OUTPUT="."
+OUTPUT="./mantis-backups"
 ####################################################################################################
 
 date=$(date --rfc-3339=date)
