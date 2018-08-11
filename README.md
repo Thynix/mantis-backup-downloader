@@ -22,8 +22,21 @@ This script:
 web interface is only available on MantisHub, not in stock Mantis.
 Hence this script likely only will work with MantisHub.
 
+### Script for encrypting the backups
+
+As a bonus feature the script `encrypt-mantis-backup` can be used to:
+- encrypt the backup of the current day to a recipient's GPG key and
+  create a signature file (make sure the user which runs it has a GPG
+  private key which is not password protected!).
+- automatically download the recipient's GPG key at every run to check
+  for revocation.
+- place the encrypted and signed backup in a different directory, and
+  set the permissions of the directory / files as specified.
+  This e.g. allows putting the encrypted backup on a web server for
+  distribution.
+
 ### Dependencies
 
 ```shell
-apt-get install bash wget grep unzip
+apt-get install bash wget grep unzip gnupg
 ```
