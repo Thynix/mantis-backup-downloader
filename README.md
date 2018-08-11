@@ -40,3 +40,18 @@ As a bonus feature the script `encrypt-mantis-backup` can be used to:
 ```shell
 apt-get install bash wget grep unzip gnupg
 ```
+
+### Configuration
+
+Please make sure to populate the scripts' `Configuration` sections
+beforeusing them, they cannot be used without configuration.
+
+You can configure the scripts to run in a cronjob if you obey the
+following:
+- don't run more often than once per day. Don't run close to midnight as
+  the scripts use the current day as directory names.
+- ideally create a separate user account to contain the scripts so there
+  can be a single non-password-protected key for the
+  `encrypt-mantis-backup` script.
+  Notice: `crontab -e` can be used to edit the current user's crontab.
+
