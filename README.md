@@ -53,5 +53,3 @@ following:
 - ideally create a separate user account to contain the scripts so there
   can be a single non-password-protected key for the
   `encrypt-mantis-backup` script.
-  Notice: `crontab -e` can be used to edit the current user's crontab.
-
