@@ -69,15 +69,19 @@ if [ "$database_date" != "$date" ] || [ "$attachments_date" != "$date" ] ; then
 fi
 
 # Download backup
-wget --load-cookies "$cookies" --output-document="$OUTPUT/mantis-database.zip" --quiet \
+wget --load-cookies "$cookies" --output-document="$OUTPUT/mantis-database.zip.tmp" --quiet \
 	"https://$TRACKER/manage_backup_download.php?type=data"
-wget --load-cookies "$cookies" --output-document="$OUTPUT/mantis-attachments.zip" --quiet \
+wget --load-cookies "$cookies" --output-document="$OUTPUT/mantis-attachments.zip.tmp" --quiet \
 	"https://$TRACKER/manage_backup_download.php?type=attach"
 
 # Test zip files
-unzip -tqq "$OUTPUT/mantis-database.zip"
-unzip -tqq "$OUTPUT/mantis-attachments.zip"
+unzip -tqq "$OUTPUT/mantis-database.zip.tmp"
+unzip -tqq "$OUTPUT/mantis-attachments.zip.tmp"
 
 # Set timestamp of zip files to that of the newest contained file
-unzip -Tq "$OUTPUT/mantis-database.zip"
-unzip -Tq "$OUTPUT/mantis-attachments.zip"
+unzip -Tq "$OUTPUT/mantis-database.zip.tmp"
+unzip -Tq "$OUTPUT/mantis-attachments.zip.tmp"
+
+# We're done, move the files to their proper names to mark them as valid
+mv -- "$OUTPUT/mantis-database.zip.tmp" "$OUTPUT/mantis-database.zip"
+mv -- "$OUTPUT/mantis-attachments.zip.tmp" "$OUTPUT/mantis-attachments.zip"
