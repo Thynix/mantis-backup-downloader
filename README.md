@@ -44,7 +44,7 @@ apt-get install bash wget grep unzip gnupg
 ### Configuration
 
 Please make sure to populate the scripts' `Configuration` sections
-beforeusing them, they cannot be used without configuration.
+before using them, they cannot be used without configuration.
 
 You can configure the scripts to run in a cronjob if you obey the
 following:
