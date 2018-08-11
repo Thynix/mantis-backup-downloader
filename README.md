@@ -50,7 +50,8 @@ You can configure the scripts to run in a cronjob if you obey the
 following:
 - don't run more often than once per day. Don't run close to midnight.
   These are necessary as the scripts use the current day as directory
-  names.
+  names and validate whether the date matches the date which Mantis
+  claims the backup is from.
 - ideally create a separate user account to contain the scripts so there
   can be a single non-password-protected key for the
   `encrypt-mantis-backup` script.
