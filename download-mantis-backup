@@ -22,7 +22,7 @@ if [ -e "$OUTPUT" ] ; then
 	echo "Error: Backup already exists! Directory: $OUTPUT" >&2
 	exit 1
 fi
-mkdir --mode 700 "$OUTPUT"
+mkdir --parents --mode 700 "$OUTPUT"
 
 cookies="$(mktemp)"
 backup_html="$(mktemp)"
