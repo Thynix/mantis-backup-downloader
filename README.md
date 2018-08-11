@@ -48,8 +48,9 @@ before using them, they cannot be used without configuration.
 
 You can configure the scripts to run in a cronjob if you obey the
 following:
-- don't run more often than once per day. Don't run close to midnight as
-  the scripts use the current day as directory names.
+- don't run more often than once per day. Don't run close to midnight.
+  These are necessary as the scripts use the current day as directory
+  names.
 - ideally create a separate user account to contain the scripts so there
   can be a single non-password-protected key for the
   `encrypt-mantis-backup` script.
