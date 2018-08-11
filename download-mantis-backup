@@ -12,7 +12,7 @@ TRACKER="REPLACE_THIS.mantishub.io"
 # You can also read these from a file with: "<(/path/to/data)"
 LOGIN_EMAIL=""
 PASSWORD=""
-# Location where to put the backup directories
+# Location where to put the backup directories. Must not start with "-".
 OUTPUT="."
 ####################################################################################################
 
