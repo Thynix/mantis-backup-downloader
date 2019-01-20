@@ -8,6 +8,7 @@ shopt -s nullglob
 shopt -s failglob
 
 # Configuration ####################################################################################
+# TODO: import these from a separate file that can be .gitignored to reduce the risk of committing credentials.
 # Domain of bugtracker
 TRACKER="REPLACE_THIS.mantishub.io"
 # Mantis login data. Please URL-encode this if necessary.
@@ -27,38 +28,57 @@ fi
 mkdir --parents --mode 700 "$OUTPUT"
 
 cookies="$(mktemp)"
-backup_html="$(mktemp)"
-trap 'rm "$cookies" "$backup_html"' EXIT
+backup_request_html="$(mktemp)"
+backup_page_html="$(mktemp)"
+trap 'rm "$cookies" "$backup_request_html" "$backup_page_html"' EXIT
 
-# Log in
-# The missing "=" between some parameters and their value is intentional, it's specified like that
-# in the wget manpage for whatever reason.
-# To debug by showing output on stdout set output-document to "-".
+function log_in()
+{
+	# The missing "=" between some parameters and their value is intentional, it's specified like that
+	# in the wget manpage for whatever reason.
+	# To debug by showing output on stdout set output-document to "-".
 
-wget --save-cookies "$cookies" --keep-session-cookies --post-data="username=$LOGIN_EMAIL" \
-	--output-document="/dev/null" --quiet "https://$TRACKER/login_password_page.php"
+	wget --save-cookies "$cookies" --keep-session-cookies --post-data="username=$LOGIN_EMAIL" \
+		--output-document="/dev/null" --quiet "https://$TRACKER/login_password_page.php"
 
-wget --load-cookies "$cookies" --save-cookies "$cookies" --keep-session-cookies \
-	--post-data="username=$LOGIN_EMAIL&password=$PASSWORD&return=index.php" \
-	--output-document="/dev/null" --quiet "https://$TRACKER/login.php"
+	wget --load-cookies "$cookies" --save-cookies "$cookies" --keep-session-cookies \
+		--post-data="username=$LOGIN_EMAIL&password=$PASSWORD&return=index.php" \
+		--output-document="/dev/null" --quiet "https://$TRACKER/login.php"
+}
+
 
 # Create backup
+# The result is unused currently, but saved for troubleshooting. It will likely include something
+# like "Backup scheduled on 2019-01-20 09:34. Check again later. Backups may take up to 30 minutes."
 
+log_in
 wget --load-cookies "$cookies" --save-cookies "$cookies" --keep-session-cookies \
-	--post-data='' --output-document="$backup_html" --quiet \
+	--post-data='' --output-document="$backup_request_html" --quiet \
 	"https://$TRACKER/manage_backup.php"
 
+# Wait 30 minutes for the backup to complete as suggested.
+# TODO: Could do more aggressive polling for completion by waiting for shorter
+#       periods (that still total 30 minutes) and checking multiple times.
+sleep 30m
+
 # Extract dates of backup from HTML
+# The session likely expired during the sleep, so remove cookies to ensure it did and log in again.
+rm "$cookies"
+log_in
+wget --load-cookies "$cookies" --save-cookies "$cookies" --keep-session-cookies \
+	--output-document="$backup_page_html" --quiet \
+	"https://$TRACKER/manage_backup_page.php"
+
 
 # Use --perl-regexp to get non-greedy behavior by ".*?".
 # See https://stackoverflow.com/questions/3027518/how-to-do-a-non-greedy-match-in-grep
 database_date=$(grep --perl-regexp \
 	"Download database and configuration \((.*?) created on (....-..-.. ..:..)\)" --only-matching \
-	"$backup_html" | grep --only-matching "....-..-..")
+	"$backup_page_html" | grep --only-matching "....-..-..")
 
 attachments_date=$(grep --perl-regexp \
 	"Download attachments \((.*?) created on (....-..-.. ..:..)\)" --only-matching \
-	"$backup_html" | grep --only-matching "....-..-..")
+	"$backup_page_html" | grep --only-matching "....-..-..")
 
 if [ "$database_date" != "$date" ] || [ "$attachments_date" != "$date" ] ; then
 	echo "Error: Backup dates mismatch current date! Did requesting a new backup fail?" >&2
