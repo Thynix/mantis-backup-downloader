@@ -55,3 +55,8 @@ following:
 - ideally create a separate user account to contain the scripts so there
   can be a single non-password-protected key for the
   `encrypt-mantis-backup` script.
+
+### Usage
+
+The `run` script will run the download and encrypt scripts, and is
+suitable for automation usage.

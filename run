@@ -1,0 +1,8 @@
+#!/bin/bash
+set -o nounset
+set -o errexit
+set -o errtrace
+trap 'echo "Error at line $LINENO, exit code $?" >&2' ERR
+
+./download-mantis-backup
+./encrypt-mantis-backup
