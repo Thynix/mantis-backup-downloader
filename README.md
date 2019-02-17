@@ -38,7 +38,7 @@ As a bonus feature the script `encrypt-mantis-backup` can be used to:
 ### Dependencies
 
 ```shell
-apt-get install bash wget grep unzip gnupg
+apt-get install bash wget grep unzip gnupg dirmngr
 ```
 
 ### Configuration
