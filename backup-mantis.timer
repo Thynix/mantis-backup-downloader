@@ -1,0 +1,9 @@
+[Unit]
+Description=Trigger Mantis backup every Monday morning
+
+[Timer]
+OnCalendar=Mon 03:00
+RandomizedDelaySec=1 hour
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,9 @@
+[Unit]
+Description=Back up Freenet MantisHub
+Requisite=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/home/pi/mantis-backup-downloader/run
+WorkingDirectory=/home/pi/mantis-backup-downloader
+User=pi
